@@ -109,3 +109,11 @@ a:hover { color: var(--accent); border-bottom-color: var(--accent); }
   .site-nav a { display: block; margin: 0; padding: 12px 4px; font-size: 16px; color: var(--ink); border-bottom: 1px solid var(--line); }
   .site-nav a:last-child { border-bottom: none; }
 }
+
+/* 加密文章 */
+.lock-gate { border: 1px solid var(--line); border-radius: 8px; padding: 24px; margin: 24px 0 48px; }
+.lock-gate form { display: flex; gap: 12px; margin-top: 12px; }
+.lock-gate input { flex: 1; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+.lock-gate button { font-size: 16px; padding: 10px 20px; border: none; border-radius: 6px; background: var(--accent); color: #fff; cursor: pointer; }
+.lock-msg { color: var(--accent); margin-top: 12px; }
+.tl-locked { color: var(--muted); }
