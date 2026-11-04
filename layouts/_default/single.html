@@ -2,7 +2,45 @@
 <article class="post">
   <h1>{{ .Title }}</h1>
   <p class="meta"><time>{{ .Date.Format "2006年01月02日" }}</time>{{ with .Params.tags }}　{{ range . }}<span class="tag">{{ . }}</span>{{ end }}{{ end }}</p>
+  {{ if .Params.locked }}
+  {{ $lock := index .Site.Data.locked .File.BaseFileName }}
+  {{ if $lock }}
+  <div class="lock-gate" id="lock-gate">
+    <p>🔒 本文已加密，请输入访问密码。</p>
+    <form id="lock-form">
+      <input type="password" id="lock-pw" placeholder="访问密码" autocomplete="off" />
+      <button type="submit">查看</button>
+    </form>
+    <p class="lock-msg" id="lock-msg" hidden>密码不对，请再试一次。</p>
+  </div>
+  <div class="content" id="locked-content" hidden></div>
+  <script>
+  (function(){
+    var LOCK = { salt: "{{ index $lock "salt" }}", iv: "{{ index $lock "iv" }}", data: "{{ index $lock "data" }}" };
+    function b64(s){ var bin = atob(s); var b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return b; }
+    document.getElementById('lock-form').addEventListener('submit', async function(e){
+      e.preventDefault();
+      var pw = document.getElementById('lock-pw').value;
+      try {
+        var keyMat = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+        var key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: b64(LOCK.salt), iterations: 100000, hash: 'SHA-256' }, keyMat, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+        var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(LOCK.iv) }, key, b64(LOCK.data));
+        var html = new TextDecoder().decode(pt);
+        var c = document.getElementById('locked-content');
+        c.innerHTML = html; c.hidden = false;
+        document.getElementById('lock-gate').hidden = true;
+      } catch (err) {
+        document.getElementById('lock-msg').hidden = false;
+      }
+    });
+  })();
+  </script>
+  {{ else }}
+  <p>本文尚未加密，请稍后再来。</p>
+  {{ end }}
+  {{ else }}
   <div class="content">{{ .Content }}</div>
+  {{ end }}
   <nav class="post-nav">
     {{ with .PrevInSection }}<a class="prev" href="{{ .RelPermalink }}">← {{ .Title }}</a>{{ end }}
     {{ with .NextInSection }}<a class="next" href="{{ .RelPermalink }}">{{ .Title }} →</a>{{ end }}
